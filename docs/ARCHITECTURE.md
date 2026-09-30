@@ -15,7 +15,7 @@ directories) but contains no code copied from any other project.
 | Rule | Why |
 |---|---|
 | Python 3.9+ standard library only, everywhere | must run on a fresh machine with only `python3` |
-| One plugin (`plugin/`), one package (`plugin/gatekit/`) | cross-plugin paths do not exist in Claude Code; single plugin means `${CLAUDE_PLUGIN_ROOT}` reaches everything |
+| One project-local setup, one package (`.claude/gatekit-core/gatekit/`) | opening the repository activates commands, skills, and hooks without a plugin install |
 | Gates are hooks, not prose | prose instructions fire nondeterministically; hooks fire every time |
 | Every hook exits 0 on any internal error and writes a one-line diagnostic to `.gatekit/runs/hook-errors.log` | a broken hook must never break the user's session |
 | Verdict vocabulary is exactly `ok / warn / fail / unverified` | "not checked" must never be rounded to pass or fail |
@@ -29,10 +29,9 @@ directories) but contains no code copied from any other project.
 
 ```
 gatekit/
-├── .claude-plugin/marketplace.json     # one plugin: ./plugin
-├── plugin/                              # the installable plugin
-│   ├── .claude-plugin/plugin.json
-│   ├── commands/                        # execution instructions (one per pipeline)
+├── .claude/                             # Claude Code project configuration
+│   ├── settings.json                    # hook registrations (see §3)
+│   ├── commands/gatekit/                # execution instructions (one per pipeline)
 │   │   ├── discover.md    /gatekit:discover    → spec/00-discovery.md (optional first step)
 │   │   ├── interview.md   /gatekit:interview   → spec/01-prd.md, spec/03-architecture.md
 │   │   ├── mockup.md      /gatekit:mockup      → spec/02-screens.md, spec/tokens.json, ledger gaps, optional preview (ADR-0011)
@@ -43,9 +42,10 @@ gatekit/
 │   │   ├── verify.md      /gatekit:verify      → independent E2E + report check
 │   │   ├── doctor.md      /gatekit:doctor
 │   │   └── setup.md       /gatekit:setup       → optional Codex backend, config
-│   ├── skills/<name>/SKILL.md           # ≤ 40-line NL trigger shims that point at the command
-│   ├── hooks/hooks.json                 # 7 hook registrations (see §3); auto-loaded, never listed in plugin.json
-│   ├── gatekit/                         # kernel package (stdlib only)
+│   ├── skills/gatekit-*/SKILL.md        # ≤ 40-line NL trigger shims that point at the command
+│   └── gatekit-core/                    # kernel package and its runtime data (stdlib only)
+│       ├── .claude-plugin/plugin.json   # runtime layout marker for paths.plugin_root()
+│       ├── gatekit/                     # kernel package
 │   │   ├── cli.py         dispatcher: python3 -m gatekit <sub>
 │   │   ├── hookio.py      hook stdin/stdout contract, safe wrapper, host dialects (§3)
 │   │   ├── hosts.py       generated host layers: `gatekit install --host codex` (§15)
@@ -61,11 +61,12 @@ gatekit/
 │   │   ├── config.py      .gatekit/config.json loader with defaults
 │   │   ├── paths.py       project root / state dir resolution
 │   │   └── gates/         hook entry points: prompt.py write.py bash.py spawn.py question.py compact.py stop.py
-│   ├── spec-kit/
+│       ├── spec-kit/
 │   │   ├── templates/{ko,en}/01-prd.md … 05-gate.md, RECOVERY.md, PROGRESS.md
 │   │   └── heading-map.json             # canonical headings per file per language
-│   ├── policy/language.md questioning.md verification.md   # loaded at runtime by commands
-│   └── tests/                           # unittest, run with: cd plugin && python3 -m unittest discover -s tests
+│       ├── policy/language.md questioning.md verification.md   # loaded at runtime by commands
+│       ├── bin/gatekit.py               # direct launcher
+│       └── tests/                       # unittest, run with: cd .claude/gatekit-core && python3 -m unittest discover -s tests
 ├── tools/                               # CI gates (stdlib)
 ├── docs/ARCHITECTURE.md (this), decisions/ADR-*.md
 ├── .github/workflows/ci.yml
@@ -144,16 +145,16 @@ Responses:
 prints the returned JSON (if any), and **always exits 0**; exceptions are
 appended to `.gatekit/runs/hook-errors.log` as one line `iso_ts event_name error`.
 Each gate must complete in < 5 s on a normal project. The Stop gate runs the
-contract (§5) and is the exception: its hook `timeout` in `hooks.json` is
+contract (§5) and is the exception: its hook `timeout` in `.claude/settings.json` is
 600 s, the largest value the Claude Code hook documentation shows, and the
 gate caps the contract run at `STOP_BUDGET_CAP_S` = 570 s (`gates/stop.py`)
 so start-up and teardown fit inside the timeout. A `gatekit-budget` above the
 cap runs in full under `contract run` but is cut at the Stop gate, where the
 cut is reported as `unverified` — honest, where a hook killed by Claude Code
-would record no verdict and no log line. Tests pin `hooks.json` to
+would record no verdict and no log line. Tests pin `.claude/settings.json` to
 `STOP_HOOK_TIMEOUT_S` and the cap to at least 30 s below it.
 
-Registered hooks (plugin/hooks/hooks.json): UserPromptSubmit→`gates/prompt.py`,
+Registered hooks (`.claude/settings.json`): UserPromptSubmit→`gates/prompt.py`,
 PreToolUse `Write|Edit|MultiEdit|NotebookEdit`→`gates/write.py`,
 PreToolUse `Bash`→`gates/bash.py` (ADR-0004),
 PreToolUse `Agent|Task`→`gates/spawn.py`, PostToolUse `AskUserQuestion`→`gates/question.py`,
@@ -162,9 +163,9 @@ Stop→`gates/stop.py`.
 Gate behaviour:
 
 Every gate stands down in a project that has no `.gatekit/` directory. The
-plugin installs globally, so these hooks fire in every project the user
-opens; a project with no `.gatekit/` has never run a gatekit command and
-never asked to be governed. Such a gate allows without reading further and
+hooks are project-local, so they run only when this repository is opened; a
+project with no `.gatekit/` has never run a gatekit command and never asked to
+be governed. Such a gate allows without reading further and
 **creates no state there** — no ledger, no `.gatekit/`. The one exception is
 `compact`, which already writes nothing when no job exists.
 
@@ -641,8 +642,8 @@ runs `check` and the user confirms.
 
 ## 12. Doctor (`doctor.py`) — 8 axes
 
-1 plugin files present (plugin.json, hooks.json, all gate scripts exist and are non-empty);
-2 hooks registered in the running install (compare `~/.claude/plugins/…` cache when present, else `unverified`);
+1 project-core files present (plugin.json layout marker, settings.json, all gate scripts exist and are non-empty);
+2 hooks registered in project settings (all expected command paths exist);
 3 project state (`.gatekit/config.json` valid, approvals valid JSON);
 4 spec set (`spec.validate` verdict, or `unverified` when no `spec/`);
 5 contract freshness (`source_sha256` matches);
@@ -653,18 +654,18 @@ runs `check` and the user confirms.
 
 ## 15. Host layers (`hosts.py`, ADR-0006)
 
-Claude Code loads gatekit as a plugin. Codex CLI reads three things from a
+Claude Code loads this checkout's project-local configuration. Codex CLI reads three things from a
 project instead — `.codex/hooks.json`, `.agents/skills/<name>/SKILL.md`,
 `AGENTS.md` — and `gatekit install --host codex` generates all three **from
-`plugin/`**, which stays the single source:
+`.claude/gatekit-core/`**, which stays the single source:
 
 - `.codex/hooks.json`: the six gates with `--host codex`; `apply_patch`
   joins the write matcher; the Stop timeout is copied from
-  `plugin/hooks/hooks.json`.
+  `.claude/settings.json`.
 - one skill per `commands/<name>.md`: `SKILL.md` is a ≤ 40-line shim (the
   plugin skill's trigger text plus the Codex differences: no
   `AskUserQuestion`, `$gatekit-<name>` invocation, project trust) and
-  `command.md` is the command body with `${CLAUDE_PLUGIN_ROOT}` replaced by
+  `command.md` is the command body with its project-core launcher path replaced by
   the checkout path and `/gatekit:<name>` rewritten to `$gatekit-<name>`.
 - `AGENTS.md`: a managed block between `<!-- gatekit:begin -->` and
   `<!-- gatekit:end -->`; text outside it is never touched.
@@ -682,11 +683,11 @@ count.
 
 ## 13. Testing convention
 
-`cd plugin && python3 -m unittest discover -s tests -v` must pass with no network
+`cd .claude/gatekit-core && python3 -m unittest discover -s tests -v` must pass with no network
 and no external binaries. Tests that need a binary (`claude`, `codex`) use a
 fake executable created in a temp dir and prepended to `PATH`. Every gate has at
 least three tests: allow, deny/block, internal-error-still-exits-0. Fixtures
-under `plugin/tests/fixtures/` are small text files only.
+under `.claude/gatekit-core/tests/fixtures/` are small text files only.
 
 `jobs.py` (ADR-0009) additionally covers: preflight classification (already
 passing → no worker; command error → `GatePreflightError` and CLI exit 4 with
@@ -750,7 +751,7 @@ unrelated `*-preview.html` capture do not.
 def project_root(cwd: str | None = None) -> pathlib.Path
 def state_dir(root: pathlib.Path) -> pathlib.Path      # root / ".gatekit"
 def spec_dir(root: pathlib.Path) -> pathlib.Path       # root / "spec"
-def plugin_root() -> pathlib.Path                      # directory containing plugin.json (parent of gatekit/)
+def plugin_root() -> pathlib.Path                      # directory containing .claude-plugin/plugin.json (parent of gatekit/)
 
 # config.py
 DEFAULTS: dict
