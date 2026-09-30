@@ -41,29 +41,23 @@ def write(path: pathlib.Path, content: str) -> None:
 
 def minimal_clean_repo(root: pathlib.Path) -> None:
     """A tree with the minimum structure every gate expects to find clean."""
-    write(root / ".claude-plugin" / "marketplace.json", json.dumps({
-        "name": "gatekit",
-        "plugins": [{"name": "gatekit", "source": "./plugin"}],
-    }))
-    write(root / "plugin" / ".claude-plugin" / "plugin.json", json.dumps({
+    write(root / ".claude" / "gatekit-core" / ".claude-plugin" / "plugin.json", json.dumps({
         "name": "gatekit",
         "version": "0.1.0",
-        "commands": "./commands",
-        "skills": "./skills",
     }))
-    write(root / "plugin" / "hooks" / "hooks.json", json.dumps({
+    write(root / ".claude" / "settings.json", json.dumps({
         "hooks": {
             "Stop": [{"hooks": [{"type": "command", "command": 'python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/stop.py"'}]}]
         }
     }))
-    write(root / "plugin" / "gatekit" / "gates" / "stop.py", "# stop gate\n")
-    write(root / "plugin" / "bin" / "gatekit.py", "# launcher\n")
-    write(root / "plugin" / "gatekit" / "cli.py", 'SUBCOMMANDS = {\n    "doctor": ("gatekit.doctor", "x"),\n    "spec": ("gatekit.spec", "x"),\n}\n')
-    write(root / "plugin" / "commands" / "build.md", (
+    write(root / ".claude" / "gatekit-core" / "gatekit" / "gates" / "stop.py", "# stop gate\n")
+    write(root / ".claude" / "gatekit-core" / "bin" / "gatekit.py", "# launcher\n")
+    write(root / ".claude" / "gatekit-core" / "gatekit" / "cli.py", 'SUBCOMMANDS = {\n    "doctor": ("gatekit.doctor", "x"),\n    "spec": ("gatekit.spec", "x"),\n}\n')
+    write(root / ".claude" / "commands" / "gatekit" / "build.md", (
         "---\nallowed-tools: Read, Bash\n---\n"
         "# /gatekit:build\n\nSee policy/verification.md. Output follows output_lang.\n"
     ))
-    write(root / "plugin" / "skills" / "build" / "SKILL.md", (
+    write(root / ".claude" / "skills" / "build" / "SKILL.md", (
         "---\nallowed-tools: Read\n---\n# build trigger\nSee the build command.\n"
     ))
     write(root / "CHANGELOG.md", "# Changelog\n\n## 0.1.0 — 2026-09-10\n\n- initial\n")
@@ -119,7 +113,7 @@ class TestSkillSize(unittest.TestCase):
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
             body = "---\nallowed-tools: Read\n---\n" + "\n".join(f"line {i}" for i in range(50))
-            write(root / "plugin" / "skills" / "big" / "SKILL.md", body)
+            write(root / ".claude" / "skills" / "big" / "SKILL.md", body)
             proc = run_gate("gate_skill_size.py", root)
             self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
             payload = json.loads(proc.stdout)
@@ -130,7 +124,7 @@ class TestSkillSize(unittest.TestCase):
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
             body = "---\nallowed-tools: Read\n---\n" + "\n".join(f"line {i}" for i in range(200))
-            write(root / "plugin" / "commands" / "huge.md", body)
+            write(root / ".claude" / "commands" / "gatekit" / "huge.md", body)
             proc = run_gate("gate_skill_size.py", root)
             self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
 
@@ -139,7 +133,7 @@ class TestSkillSize(unittest.TestCase):
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
             write(
-                root / "plugin" / "commands" / "asks.md",
+                root / ".claude" / "commands" / "gatekit" / "asks.md",
                 "---\nallowed-tools: Read, AskUserQuestion, Bash\n---\n# cmd\n",
             )
             proc = run_gate("gate_skill_size.py", root)
@@ -152,7 +146,7 @@ class TestSkillSize(unittest.TestCase):
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
             write(
-                root / "plugin" / "skills" / "asks" / "SKILL.md",
+                root / ".claude" / "skills" / "asks" / "SKILL.md",
                 "---\nallowed-tools:\n  - Read\n  - AskUserQuestion\n---\n# trigger\n",
             )
             proc = run_gate("gate_skill_size.py", root)
@@ -197,7 +191,7 @@ class TestForbiddenPhrases(unittest.TestCase):
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
             write(
-                root / "plugin" / "skills" / "bad" / "SKILL.md",
+                root / ".claude" / "skills" / "bad" / "SKILL.md",
                 "---\nallowed-tools: Read\n---\nEXECUTE IMMEDIATELY when this triggers.\n",
             )
             proc = run_gate("gate_forbidden_phrases.py", root)
@@ -208,7 +202,7 @@ class TestForbiddenPhrases(unittest.TestCase):
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
             write(
-                root / "plugin" / "skills" / "bad2" / "SKILL.md",
+                root / ".claude" / "skills" / "bad2" / "SKILL.md",
                 "---\nallowed-tools: Read\n---\nStep 1: do the thing\n",
             )
             proc = run_gate("gate_forbidden_phrases.py", root)
@@ -219,7 +213,7 @@ class TestForbiddenPhrases(unittest.TestCase):
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
             write(
-                root / "plugin" / "commands" / "nopolicy.md",
+                root / ".claude" / "commands" / "gatekit" / "nopolicy.md",
                 "---\nallowed-tools: Read\n---\n# /gatekit:nopolicy\n\nOutput follows output_lang.\n",
             )
             proc = run_gate("gate_forbidden_phrases.py", root)
@@ -232,7 +226,7 @@ class TestForbiddenPhrases(unittest.TestCase):
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
             write(
-                root / "plugin" / "commands" / "nolang.md",
+                root / ".claude" / "commands" / "gatekit" / "nolang.md",
                 "---\nallowed-tools: Read\n---\n# /gatekit:nolang\n\nSee policy/verification.md.\n",
             )
             proc = run_gate("gate_forbidden_phrases.py", root)
@@ -253,7 +247,7 @@ class TestManifest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
-            (root / "plugin" / "gatekit" / "gates" / "stop.py").unlink()
+            (root / ".claude" / "gatekit-core" / "gatekit" / "gates" / "stop.py").unlink()
             proc = run_gate("gate_manifest.py", root)
             self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
             payload = json.loads(proc.stdout)
@@ -263,7 +257,7 @@ class TestManifest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
-            write(root / "plugin" / "gatekit" / "gates" / "stop.py", "")
+            write(root / ".claude" / "gatekit-core" / "gatekit" / "gates" / "stop.py", "")
             proc = run_gate("gate_manifest.py", root)
             self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
 
@@ -281,7 +275,7 @@ class TestManifest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
-            plugin_json_path = root / "plugin" / ".claude-plugin" / "plugin.json"
+            plugin_json_path = root / ".claude" / "gatekit-core" / ".claude-plugin" / "plugin.json"
             data = json.loads(plugin_json_path.read_text())
             data["version"] = "v1"
             write(plugin_json_path, json.dumps(data))
@@ -292,11 +286,11 @@ class TestManifest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
-            write(root / "plugin" / "hooks" / "hooks.json", "{not valid json")
+            write(root / ".claude" / "settings.json", "{not valid json")
             proc = run_gate("gate_manifest.py", root)
             self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
 
-    def test_missing_marketplace_source_dir_is_detected(self) -> None:
+    def test_marketplace_file_is_ignored_for_project_setup(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
@@ -305,7 +299,7 @@ class TestManifest(unittest.TestCase):
                 "plugins": [{"name": "gatekit", "source": "./nonexistent"}],
             }))
             proc = run_gate("gate_manifest.py", root)
-            self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
 
 class TestReadmeSync(unittest.TestCase):
@@ -320,7 +314,7 @@ class TestReadmeSync(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
-            write(root / "plugin" / "commands" / "verify.md", (
+            write(root / ".claude" / "commands" / "gatekit" / "verify.md", (
                 "---\nallowed-tools: Read\n---\n# /gatekit:verify\n\nSee policy/. output_lang applies.\n"
             ))
             # README.md not updated with the new command.
@@ -333,7 +327,7 @@ class TestReadmeSync(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
-            write(root / "plugin" / "commands" / "doctor.md", (
+            write(root / ".claude" / "commands" / "gatekit" / "doctor.md", (
                 "---\nallowed-tools: Read\n---\n# /gatekit:doctor\n\nSee policy/. output_lang applies.\n"
             ))
             write(root / "README.md", "# gatekit\n\nCommands: /gatekit:build /gatekit:doctor\n")
@@ -357,7 +351,7 @@ class TestCommandInvocations(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
-            write(root / "plugin" / "commands" / "doctor.md",
+            write(root / ".claude" / "commands" / "gatekit" / "doctor.md",
                   '---\nallowed-tools: Bash\n---\nRun `python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" doctor`. policy/ output_lang\n')
             proc = run_gate("gate_command_invocations.py", root)
             self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
@@ -366,7 +360,7 @@ class TestCommandInvocations(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
-            write(root / "plugin" / "commands" / "x.md", "python3 -m gatekit doctor\n")
+            write(root / ".claude" / "commands" / "gatekit" / "x.md", "python3 -m gatekit doctor\n")
             proc = run_gate("gate_command_invocations.py", root)
             self.assertEqual(proc.returncode, 1)
             self.assertIn("launcher", proc.stdout)
@@ -375,7 +369,7 @@ class TestCommandInvocations(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
-            write(root / "plugin" / "commands" / "x.md",
+            write(root / ".claude" / "commands" / "gatekit" / "x.md",
                   'cd "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core" && python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" doctor\n')
             proc = run_gate("gate_command_invocations.py", root)
             self.assertEqual(proc.returncode, 1)
@@ -384,7 +378,7 @@ class TestCommandInvocations(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
-            write(root / "plugin" / "commands" / "x.md",
+            write(root / ".claude" / "commands" / "gatekit" / "x.md",
                   'python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" frobnicate\n')
             proc = run_gate("gate_command_invocations.py", root)
             self.assertEqual(proc.returncode, 1)
@@ -394,29 +388,28 @@ class TestCommandInvocations(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
-            (root / "plugin" / "bin" / "gatekit.py").unlink()
+            (root / ".claude" / "gatekit-core" / "bin" / "gatekit.py").unlink()
             proc = run_gate("gate_command_invocations.py", root)
             self.assertEqual(proc.returncode, 1)
 
 
-class TestManifestHooksDuplicate(unittest.TestCase):
-    def test_duplicate_hooks_reference_is_rejected(self) -> None:
+class TestManifestProjectSettings(unittest.TestCase):
+    def test_plugin_marker_hooks_field_is_ignored(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
-            pj = root / "plugin" / ".claude-plugin" / "plugin.json"
+            pj = root / ".claude" / "gatekit-core" / ".claude-plugin" / "plugin.json"
             data = json.loads(pj.read_text())
             data["hooks"] = "./hooks/hooks.json"
             pj.write_text(json.dumps(data))
             proc = run_gate("gate_manifest.py", root)
-            self.assertEqual(proc.returncode, 1, proc.stdout)
-            self.assertIn("loaded automatically", proc.stdout)
+            self.assertEqual(proc.returncode, 0, proc.stdout)
 
     def test_missing_standard_hooks_file_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
-            (root / "plugin" / "hooks" / "hooks.json").unlink()
+            (root / ".claude" / "settings.json").unlink()
             proc = run_gate("gate_manifest.py", root)
             self.assertEqual(proc.returncode, 1, proc.stdout)
 
@@ -424,7 +417,7 @@ class TestManifestHooksDuplicate(unittest.TestCase):
 class TestManualAccuracy(unittest.TestCase):
     def _manual_repo(self, root: pathlib.Path) -> None:
         minimal_clean_repo(root)
-        write(root / "plugin" / "spec-kit" / "templates" / "ko" / "01-prd.md", "# prd\n")
+        write(root / ".claude" / "gatekit-core" / "spec-kit" / "templates" / "ko" / "01-prd.md", "# prd\n")
         write(root / "docs" / "manual" / "00-index.md",
               "# index\n\n- [소개](01-intro.md)\n")
         write(root / "docs" / "manual" / "01-intro.md",
