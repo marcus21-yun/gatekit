@@ -3,7 +3,7 @@
 ## 반드시 이 형식이어야 한다
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" <subcommand> [args]
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" <subcommand> [args]
 ```
 
 ### 왜 다른 형식은 안 되는가
@@ -37,7 +37,7 @@ python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" <subcommand> [args]
 ## doctor
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" doctor [--root PATH] [--json]
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" doctor [--root PATH] [--json]
 ```
 
 7개 축을 각각 판정하고 축마다 `fix` 문자열을 낸다.
@@ -50,7 +50,7 @@ python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" doctor [--root PATH] [--json]
 ## spec
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" spec validate [--root PATH] [--json] [--lang ko|en]
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" spec validate [--root PATH] [--json] [--lang ko|en]
 ```
 
 `validate`가 유일한 하위 명령이다. `--root`를 주면 그 경로를 프로젝트 루트로 직접 지정한다. 주지 않으면 상위로 걸어 올라가며 탐지한다.
@@ -64,9 +64,9 @@ python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" spec validate [--root PATH] [--js
 ## contract
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" contract derive [--root PATH] [--json]
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" contract status [--root PATH]
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" contract run [--root PATH] [--json] [--budget SECONDS]
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" contract derive [--root PATH] [--json]
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" contract status [--root PATH]
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" contract run [--root PATH] [--json] [--budget SECONDS]
 ```
 
 | 동작 | 하는 일 |
@@ -86,9 +86,9 @@ python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" contract run [--root PATH] [--jso
 ## approve
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" approve <path> [--note "..."] [--by NAME] [--root PATH]
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" approve check <path> [--root PATH]
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" approve list [--root PATH]
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" approve <path> [--note "..."] [--by NAME] [--root PATH]
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" approve check <path> [--root PATH]
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" approve list [--root PATH]
 ```
 
 `approve <path>`는 아무것도 묻지 않고 현재 해시를 기록한다. 사용자에게 `AskUserQuestion`으로 묻는 것은 커맨드 파일의 책임이다.
@@ -102,14 +102,14 @@ python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" approve list [--root PATH]
 ## jobs
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" jobs start [--tasks id,id] [--backend name] [--parallel N] [--dry-run] [--no-preflight] [--force-retry id,id]
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" jobs status [--job ID] [--json]
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" jobs wait [--job ID] [--timeout S]
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" jobs results [--job ID] [--compact|--json]
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" jobs redelegate <task_id> [--job ID]
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" jobs stop [--job ID]
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" jobs evaluate [--backend name] [--prompt FILE] [--lang ko|en] [--force-read-only-evaluator] [--json]
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" jobs clean [--all]
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" jobs start [--tasks id,id] [--backend name] [--parallel N] [--dry-run] [--no-preflight] [--force-retry id,id]
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" jobs status [--job ID] [--json]
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" jobs wait [--job ID] [--timeout S]
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" jobs results [--job ID] [--compact|--json]
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" jobs redelegate <task_id> [--job ID]
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" jobs stop [--job ID]
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" jobs evaluate [--backend name] [--prompt FILE] [--lang ko|en] [--force-read-only-evaluator] [--json]
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" jobs clean [--all]
 ```
 
 `results --compact`는 태스크당 한 줄로 `id state gates_passed/total`을 출력한다. `clean`은 기본적으로 가장 최근 잡을 남기고, `--all`은 전부 지운다. `evaluate`는 `verify.evaluator`(또는 `--backend`)가 가리키는 백엔드를 평가자로 쓴다. Codex 백엔드는 신뢰된 프로젝트 훅이 있으면 `--sandbox workspace-write`로(쓰기 게이트가 실제 보호막), 없으면 정확한 해결 명령과 함께 거부한다 — `--force-read-only-evaluator`는 이 거부 대신 예전처럼 `--sandbox read-only`로 강행한다(ADR-0015). `.gatekit/jobs/<잡>/evaluate/`에 기록하고 응답 꼬리(판정표)를 출력한다. 상태가 `passed`가 아니면 모든 기준이 `unverified`다.
@@ -128,11 +128,11 @@ python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" jobs clean [--all]
 ## workers
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" workers list [--json] [--root PATH]
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" workers check <name> [--probe] [--json]
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" workers set-default <name>
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" workers enable <name>
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" workers set-evaluator <agent|name>
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" workers list [--json] [--root PATH]
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" workers check <name> [--probe] [--json]
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" workers set-default <name>
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" workers enable <name>
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" workers set-evaluator <agent|name>
 ```
 
 `check`의 판정 기준이다.
@@ -156,9 +156,9 @@ python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" workers set-evaluator <agent|name
 ## ledger
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" ledger show --session <id> [--root PATH]
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" ledger init --session <id> [--root PATH]
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" ledger set-pipeline <interview|mockup|tasks|gate|build|verify|none> --session <id> [--root PATH]
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" ledger show --session <id> [--root PATH]
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" ledger init --session <id> [--root PATH]
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" ledger set-pipeline <interview|mockup|tasks|gate|build|verify|none> --session <id> [--root PATH]
 ```
 
 `--session`은 필수다. `show`는 원장 JSON 전체를, `init`은 생성된 파일 경로를 출력한다. `set-pipeline`은 `active_pipeline`을 기록한다. 평소에는 prompt 게이트가 `/gatekit:<파이프라인>` 호출을 보고 자동으로 기록하므로 손으로 부를 일은 디버깅뿐이다. 다른 파이프라인으로 바뀌면 질문 예산이 초기화된다.
@@ -173,7 +173,7 @@ python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" ledger set-pipeline <interview|mo
 ## install
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" install --host codex [--root PATH] [--dry-run]
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" install --host codex [--root PATH] [--dry-run]
 ```
 
 프로젝트에 Codex 호스트 층을 생성한다. `.codex/hooks.json`, `.agents/skills/gatekit-<커맨드>/{SKILL.md,command.md}`, `AGENTS.md`의 관리 블록. 원본은 `plugin/`이며 생성물은 다시 만들 수 있다. 두 번 실행해도 같은 결과다. `--dry-run`은 쓸 파일 목록만 보여준다.
@@ -186,7 +186,7 @@ python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" install --host codex [--root PATH
 ## lang
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" lang "감지할 텍스트"
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" lang "감지할 텍스트"
 ```
 
 `ko` 또는 `en` 한 단어를 출력한다. 언제나 종료 코드 0이다.

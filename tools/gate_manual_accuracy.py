@@ -6,10 +6,10 @@ worse than none: it sends people to commands and files that are not there.
 This gate checks the mechanical claims only — the things a rename or a
 removal would invalidate:
 
-  * every ``python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" <sub>`` call names a
-    subcommand registered in plugin/gatekit/cli.py
+  * every ``python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" <sub>`` call names a
+    subcommand registered in .claude/gatekit-core/gatekit/cli.py
   * the unrunnable ``python3 -m gatekit`` form never appears
-  * every ``/gatekit:<name>`` names a file in plugin/commands/
+  * every ``/gatekit:<name>`` names a file in .claude/gatekit-core/commands/
   * every spec file named as ``NN-*.md`` exists in the ko template set
   * the index links to every other manual page, and links resolve
 
@@ -48,10 +48,10 @@ def scan(root: pathlib.Path) -> list:
     if not pages:
         return [{"path": "docs/manual", "line": 0, "message": "manual directory has no pages"}]
 
-    cli = root / "plugin" / "gatekit" / "cli.py"
+    cli = root / ".claude" / "gatekit-core" / "gatekit" / "cli.py"
     subs = set(SUBCOMMANDS_RE.findall(cli.read_text(encoding="utf-8"))) if cli.is_file() else set()
-    commands = {p.stem for p in (root / "plugin" / "commands").glob("*.md")}
-    templates = {p.name for p in (root / "plugin" / "spec-kit" / "templates" / "ko").glob("*.md")}
+    commands = {p.stem for p in (root / ".claude" / "commands" / "gatekit").glob("*.md")}
+    templates = {p.name for p in (root / ".claude" / "gatekit-core" / "spec-kit" / "templates" / "ko").glob("*.md")}
     names = {p.name for p in pages}
 
     for page in pages:
@@ -67,7 +67,7 @@ def scan(root: pathlib.Path) -> list:
             for cmd in SLASH_CMD_RE.findall(line):
                 if commands and cmd not in commands:
                     findings.append({"path": rel, "line": lineno,
-                                     "message": f"/gatekit:{cmd} has no file in plugin/commands/"})
+                                     "message": f"/gatekit:{cmd} has no file in .claude/gatekit-core/commands/"})
             for spec in SPEC_FILE_RE.findall(line):
                 if templates and spec not in templates:
                     findings.append({"path": rel, "line": lineno,

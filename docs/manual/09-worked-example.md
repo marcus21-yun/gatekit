@@ -78,9 +78,9 @@
 승인 후 계약이 파생됐다.
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" contract derive
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" approve spec/05-gate.md
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" approve check spec/05-gate.md
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" contract derive
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" approve spec/05-gate.md
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" approve check spec/05-gate.md
 ```
 
 ## 5단계 — build
@@ -117,8 +117,8 @@ SyntaxError: invalid syntax
 ### 재위임
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" jobs redelegate task-note-delete
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" jobs redelegate task-full-suite-gate
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" jobs redelegate task-note-delete
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" jobs redelegate task-full-suite-gate
 ```
 
 이전 시도는 `attempt-1/`로 보관되고, 실패한 게이트의 출력이 프롬프트에 덧붙어 다시 실행됐다. 두 태스크 모두 재위임 2회차에서 통과했다. `task-full-suite-gate`의 최종 상태는 73개 테스트 전부 OK, 게이트 1/1이다.
@@ -165,9 +165,9 @@ QUICKNOTE_DB=/tmp/e2e_notes.db QUICKNOTE_PORT=8099 python3 app.py
 `05-gate.md`를 고쳤으므로 승인이 만료되고 계약이 stale이 됐다. 다시 파생하고 다시 승인했다.
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" contract derive
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" approve spec/05-gate.md --note "budget fence added after measuring 49s total"
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" contract run --json
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" contract derive
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" approve spec/05-gate.md --note "budget fence added after measuring 49s total"
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" contract run --json
 ```
 
 이번에는 8/8 `ok`, 총 소요 49.4초였다.

@@ -72,7 +72,7 @@ from a clone of this repository:
 
 ```
 git clone https://github.com/LovelyPaul/gatekit
-python3 "gatekit/plugin/bin/gatekit.py" install --host codex
+python3 "gatekit/.claude/gatekit-core/bin/gatekit.py" install --host codex
 ```
 
 This writes `.codex/hooks.json`, one skill per command under

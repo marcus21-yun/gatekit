@@ -8,9 +8,9 @@ gatekit은 **클린룸 구현**이다. 훅 강제 게이트, 가정 원장, 해�
 
 **맥락**: interview·mockup 파이프라인, 태스크·게이트 시스템, 워커 잡 러너, 이를 강제하는 훅들. 각각을 별도 플러그인으로 나눌 수도 있었다.
 
-**문제**: Claude Code는 `${CLAUDE_PLUGIN_ROOT}`를 플러그인마다 따로 해석하고, 플러그인 간 파일 경로는 존재하지 않는다. 한 플러그인의 훅 스크립트가 상대 경로로 다른 플러그인 디렉터리에 닿을 수 없다. 나누면 원장·판정 어휘·훅 I/O 계약 같은 횡단 요소가 중복되거나, 형제 플러그인 설치 위치에 대한 부서지기 쉬운 절대 경로 가정에 기대게 된다.
+**문제**: Claude Code는 `${CLAUDE_PROJECT_DIR}/.claude/gatekit-core`를 플러그인마다 따로 해석하고, 플러그인 간 파일 경로는 존재하지 않는다. 한 플러그인의 훅 스크립트가 상대 경로로 다른 플러그인 디렉터리에 닿을 수 없다. 나누면 원장·판정 어휘·훅 I/O 계약 같은 횡단 요소가 중복되거나, 형제 플러그인 설치 위치에 대한 부서지기 쉬운 절대 경로 가정에 기대게 된다.
 
-**결정**: gatekit은 정확히 하나의 플러그인(`plugin/`)이고 그 안에 정확히 하나의 파이썬 패키지(`plugin/gatekit/`)가 있다. `marketplace.json`은 항목 하나만 나열한다.
+**결정**: gatekit은 정확히 하나의 플러그인(`plugin/`)이고 그 안에 정확히 하나의 파이썬 패키지(`.claude/gatekit-core/gatekit/`)가 있다. `marketplace.json`은 항목 하나만 나열한다.
 
 **대가**: `plugin/`이 작은 트리 여러 개가 아니라 큰 트리 하나가 된다. `ARCHITECTURE.md` §1이 그 트리를 탐색 가능하게 유지하려고 존재한다.
 
@@ -20,7 +20,7 @@ gatekit은 **클린룸 구현**이다. 훅 강제 게이트, 가정 원장, 해�
 
 **문제**: 훅은 세션의 모든 프롬프트와 도구 호출에서 실행된다. 없는 패키지를 import하지 못하는 훅은 우아하게 격하되지 않는다. 첫 줄에서, 모든 호출마다, 누군가 알아채고 패키지 매니저를 돌릴 때까지 실패한다. `ARCHITECTURE.md` §3의 "모든 훅은 내부 오류에서도 exit 0"이라는 요구를 그 오류 처리가 실행될 기회조차 없이 위반한다.
 
-**결정**: `plugin/gatekit/`, `plugin/gatekit/gates/`, `tools/`는 파이썬 3.9+ 표준 라이브러리만 쓴다. `pip install` 없음, `npm` 없음, 벤더링된 서드파티 소스 없음.
+**결정**: `.claude/gatekit-core/gatekit/`, `.claude/gatekit-core/gatekit/gates/`, `tools/`는 파이썬 3.9+ 표준 라이브러리만 쓴다. `pip install` 없음, `npm` 없음, 벤더링된 서드파티 소스 없음.
 
 **대가**: 일부 구현이 장황하다. `spec.py`의 스키마 검증은 손으로 썼고, `tools/gate_skill_size.py`의 프론트매터 파싱은 YAML 파서가 아니라 작은 정규식이다. 이것은 감수한 비용이지 실수가 아니다.
 
@@ -63,13 +63,13 @@ gatekit은 **클린룸 구현**이다. 훅 강제 게이트, 가정 원장, 해�
 | `gate_skill_size.py` | `SKILL.md`가 40줄, 커맨드가 160줄을 넘어 커맨드/스킬 분리가 중복 산출물 두 개로 되돌아가는 것. 그리고 프론트매터의 `allowed-tools`에 `AskUserQuestion`이 들어가 확인 없이 자동 승인 실행되는 것 |
 | `gate_forbidden_phrases.py` | 스킬에 "Step 1:", "EXECUTE IMMEDIATELY" 같은 명령형 실행 단계가 들어가 스킬이 조용히 두 번째 실행 경로가 되는 것 |
 | `gate_manifest.py` | `marketplace.json`과 `plugin.json`이 디스크의 실제 파일과 어긋나는 것. 이름이 바뀐 훅 스크립트, `CHANGELOG.md`에 닿지 않은 버전 범프, `plugin.json`에 `hooks.json`을 중복 참조해 플러그인 로드가 실패하는 것 |
-| `gate_readme_sync.py` | `README.md`와 `README.ko.md`의 커맨드 목록이 `plugin/commands/*.md`와 어긋나, 한국어 문서를 읽는 사용자가 다른 그림을 보게 되는 것 |
+| `gate_readme_sync.py` | `README.md`와 `README.ko.md`의 커맨드 목록이 `.claude/commands/gatekit/*.md`와 어긋나, 한국어 문서를 읽는 사용자가 다른 그림을 보게 되는 것 |
 | `gate_command_invocations.py` | 커맨드나 정책 파일에 사용자 프로젝트 디렉터리에서 실행되지 않는 호출 형식이 들어가는 것. 모듈 실행 형식, 플러그인 루트로 `cd`하는 형식, 존재하지 않는 서브커맨드 이름 |
 
 ## 테스트 규약
 
 ```bash
-cd plugin && python3 -m unittest discover -s tests -v
+cd .claude/gatekit-core && python3 -m unittest discover -s tests -v
 ```
 
 네트워크 없이, 외부 바이너리 없이 통과해야 한다. `claude`나 `codex` 바이너리가 필요한 테스트는 임시 디렉터리에 가짜 실행 파일을 만들어 `PATH` 앞에 붙인다.

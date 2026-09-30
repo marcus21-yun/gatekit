@@ -1,6 +1,6 @@
 # 스펙 파일 형식
 
-`spec/` 아래 문서들의 필수 H2 제목은 `plugin/spec-kit/heading-map.json`이 정한다. `spec validate`는 여기 나열된 제목이 전부 존재하는지, 그리고 다른 언어 제목이 섞이지 않았는지를 검사한다. 순서는 강제하지 않고 존재 여부만 본다. 아래 제목은 한국어(`ko`) 기준이며 영어(`en`) 세트도 따로 있다.
+`spec/` 아래 문서들의 필수 H2 제목은 `.claude/gatekit-core/spec-kit/heading-map.json`이 정한다. `spec validate`는 여기 나열된 제목이 전부 존재하는지, 그리고 다른 언어 제목이 섞이지 않았는지를 검사한다. 순서는 강제하지 않고 존재 여부만 본다. 아래 제목은 한국어(`ko`) 기준이며 영어(`en`) 세트도 따로 있다.
 
 ## 00-discovery.md (선택)
 

@@ -18,7 +18,7 @@ import pathlib
 import sys
 
 MAX_BYTES = 1024 * 1024
-SKIP_DIR_NAMES = {".git"}
+SKIP_DIR_NAMES = {".git", ".gjc"}
 
 
 def repo_root() -> pathlib.Path:

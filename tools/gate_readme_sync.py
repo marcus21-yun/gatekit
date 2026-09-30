@@ -3,12 +3,12 @@
 actual set of shipped commands.
 
 Why: ARCHITECTURE.md §1 lists one command file per pipeline stage under
-plugin/commands/, each invoked as `/gatekit:<name>`. Both READMEs document
+.claude/gatekit-core/commands/, each invoked as `/gatekit:<name>`. Both READMEs document
 that command list for humans (English primary, Korean translation). If a
 command is added, renamed, or removed and only one of the two READMEs (or
 neither) is updated, users following the Korean doc get a different picture
 of the tool than users following the English one. This gate treats
-plugin/commands/*.md as the source of truth and fails if either README's
+.claude/gatekit-core/commands/*.md as the source of truth and fails if either README's
 `/gatekit:<name>` mentions don't match that set exactly.
 
 Usage:
@@ -32,7 +32,7 @@ def repo_root() -> pathlib.Path:
 
 
 def actual_commands(root: pathlib.Path) -> set[str]:
-    commands_dir = root / "plugin" / "commands"
+    commands_dir = root / ".claude" / "commands" / "gatekit"
     if not commands_dir.is_dir():
         return set()
     return {p.stem for p in commands_dir.glob("*.md")}
@@ -69,7 +69,7 @@ def scan(root: pathlib.Path) -> list[dict]:
                 {
                     "path": rel,
                     "line": 1,
-                    "message": f"references /gatekit:{name} which has no plugin/commands/{name}.md",
+                    "message": f"references /gatekit:{name} which has no .claude/gatekit-core/commands/{name}.md",
                 }
             )
 

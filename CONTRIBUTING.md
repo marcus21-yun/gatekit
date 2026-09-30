@@ -76,10 +76,10 @@ See `docs/ARCHITECTURE.md` §1 for the full repository layout. Two rules
 worth restating here because they're easy to violate by accident:
 
 - `SKILL.md` files are ≤ 40-line trigger shims that point at the matching
-  command in `plugin/commands/`. Execution instructions belong in the
+  command in `.claude/commands/gatekit/`. Execution instructions belong in the
   command file, not the skill.
 - Templates, heading maps, and presets are data files under
-  `plugin/spec-kit/`, never embedded as prose inside a prompt.
+  `.claude/gatekit-core/spec-kit/`, never embedded as prose inside a prompt.
 
 `tools/gate_skill_size.py` and `tools/gate_forbidden_phrases.py` enforce
 both of these in CI.

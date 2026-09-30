@@ -53,7 +53,7 @@ def minimal_clean_repo(root: pathlib.Path) -> None:
     }))
     write(root / "plugin" / "hooks" / "hooks.json", json.dumps({
         "hooks": {
-            "Stop": [{"hooks": [{"type": "command", "command": 'python3 "${CLAUDE_PLUGIN_ROOT}/gatekit/gates/stop.py"'}]}]
+            "Stop": [{"hooks": [{"type": "command", "command": 'python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/stop.py"'}]}]
         }
     }))
     write(root / "plugin" / "gatekit" / "gates" / "stop.py", "# stop gate\n")
@@ -358,7 +358,7 @@ class TestCommandInvocations(unittest.TestCase):
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
             write(root / "plugin" / "commands" / "doctor.md",
-                  '---\nallowed-tools: Bash\n---\nRun `python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" doctor`. policy/ output_lang\n')
+                  '---\nallowed-tools: Bash\n---\nRun `python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" doctor`. policy/ output_lang\n')
             proc = run_gate("gate_command_invocations.py", root)
             self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
@@ -376,7 +376,7 @@ class TestCommandInvocations(unittest.TestCase):
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
             write(root / "plugin" / "commands" / "x.md",
-                  'cd "${CLAUDE_PLUGIN_ROOT}" && python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" doctor\n')
+                  'cd "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core" && python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" doctor\n')
             proc = run_gate("gate_command_invocations.py", root)
             self.assertEqual(proc.returncode, 1)
 
@@ -385,7 +385,7 @@ class TestCommandInvocations(unittest.TestCase):
             root = pathlib.Path(tmp)
             minimal_clean_repo(root)
             write(root / "plugin" / "commands" / "x.md",
-                  'python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" frobnicate\n')
+                  'python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" frobnicate\n')
             proc = run_gate("gate_command_invocations.py", root)
             self.assertEqual(proc.returncode, 1)
             self.assertIn("frobnicate", proc.stdout)
@@ -428,7 +428,7 @@ class TestManualAccuracy(unittest.TestCase):
         write(root / "docs" / "manual" / "00-index.md",
               "# index\n\n- [소개](01-intro.md)\n")
         write(root / "docs" / "manual" / "01-intro.md",
-              '# intro\n\n`python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" doctor`\n\n/gatekit:build\n\n01-prd.md\n')
+              '# intro\n\n`python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" doctor`\n\n/gatekit:build\n\n01-prd.md\n')
 
     def test_clean_manual_passes(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -451,7 +451,7 @@ class TestManualAccuracy(unittest.TestCase):
             root = pathlib.Path(tmp)
             self._manual_repo(root)
             write(root / "docs" / "manual" / "01-intro.md",
-                  '# intro\n\n`python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" frobnicate`\n')
+                  '# intro\n\n`python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" frobnicate`\n')
             proc = run_gate("gate_manual_accuracy.py", root)
             self.assertEqual(proc.returncode, 1)
             self.assertIn("frobnicate", proc.stdout)

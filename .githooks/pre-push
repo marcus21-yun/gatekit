@@ -1,0 +1,18 @@
+#!/bin/sh
+set -eu
+
+run_python() {
+  python3 "$@" || python "$@" || py "$@"
+}
+
+if ! (cd .claude/gatekit-core && run_python -m unittest discover -s tests); then
+  echo "pre-push: gatekit unit tests failed; push aborted." >&2
+  exit 1
+fi
+
+for gate in tools/gate_*.py; do
+  if ! run_python "$gate"; then
+    echo "pre-push: $gate failed; push aborted." >&2
+    exit 1
+  fi
+done

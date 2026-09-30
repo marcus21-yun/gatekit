@@ -128,7 +128,7 @@
 
 **작업 시작 전에 게이트를 먼저 한 번 돌린다.** 이미 통과하면 아무것도 만들지 않고 넘어가고, 게이트 명령 자체가 잘못됐으면(없는 경로를 가리키는 등) 만들기 시작하지도 않고 그 사실을 알린다 — 잘못된 조건을 향해 몇 분씩 작업하는 걸 막기 위해서다.
 
-**진행 상황 보는 법**: `python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" jobs results --compact`가 작업당 한 줄로 상태를 보여준다. 워커의 전체 출력 로그는 매우 길어서 읽지 않는 게 좋다.
+**진행 상황 보는 법**: `python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" jobs results --compact`가 작업당 한 줄로 상태를 보여준다. 워커의 전체 출력 로그는 매우 길어서 읽지 않는 게 좋다.
 
 **남는 것**: 작업별 상태 기록, `spec/PROGRESS.md`.
 

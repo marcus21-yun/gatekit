@@ -25,7 +25,7 @@ Codex에는 플러그인 형식이 없다. 저장소를 클론하고 프로젝�
 
 ```bash
 git clone https://github.com/LovelyPaul/gatekit
-python3 "gatekit/plugin/bin/gatekit.py" install --host codex
+python3 "gatekit/.claude/gatekit-core/bin/gatekit.py" install --host codex
 ```
 
 `.codex/hooks.json`(게이트 스크립트 7개), `.agents/skills/gatekit-*`(커맨드별 스킬), `AGENTS.md`의 관리 블록이 생긴다. 생성 파일은 손으로 고치지 않고 `plugin/`을 고친 뒤 다시 `install`한다. Codex가 프로젝트의 `.codex/` 층을 신뢰하겠느냐고 물으면 승인하고 **새 세션을 연다**. 신뢰하지 않으면 훅은 파일로만 존재한다. doctor 8번 축이 이 층을 본다. 호스트별로 되는 것과 `unverified`인 것은 README의 동등성 표에 있다.
@@ -49,7 +49,7 @@ python3 "gatekit/plugin/bin/gatekit.py" install --host codex
 | 5 | contract freshness | `.gatekit/contract.json`의 `source_sha256`가 `05-gate.md`와 일치하는가 | `contract derive` 재실행 |
 | 6 | workers | 기본 백엔드 바이너리가 PATH에 있는가 | 해당 CLI를 설치하거나 `workers set-default <name>` |
 | 7 | python | 인터프리터가 3.9 이상인가 | 파이썬 3.9 이상 설치 |
-| 8 | host layer | Codex용 `.codex/hooks.json`이 있으면 그 안의 게이트 스크립트가 실제로 존재하는가. 없으면 `ok` (Claude Code 프로젝트는 필요 없다) | `python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" install --host codex` |
+| 8 | host layer | Codex용 `.codex/hooks.json`이 있으면 그 안의 게이트 스크립트가 실제로 존재하는가. 없으면 `ok` (Claude Code 프로젝트는 필요 없다) | `python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" install --host codex` |
 
 ### `unverified`가 나오는 정상적인 경우
 

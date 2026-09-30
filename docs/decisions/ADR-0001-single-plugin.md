@@ -8,7 +8,7 @@ Each of these could plausibly be its own plugin — separate marketplaces
 entries, separate `plugin.json` files, separate version numbers — the way
 a larger ecosystem of Claude Code plugins sometimes splits by concern.
 
-Claude Code resolves `${CLAUDE_PLUGIN_ROOT}` per plugin, and cross-plugin
+Claude Code resolves `${CLAUDE_PROJECT_DIR}/.claude/gatekit-core` per plugin, and cross-plugin
 file paths do not exist: one plugin's hook script cannot reach into
 another plugin's directory by a relative path, and one plugin's commands
 cannot rely on another plugin's package being installed. Splitting gatekit
@@ -30,7 +30,7 @@ separate installable units.
 
 ## Consequences
 
-- `${CLAUDE_PLUGIN_ROOT}` reaches every script gatekit needs to run; no
+- `${CLAUDE_PROJECT_DIR}/.claude/gatekit-core` reaches every script gatekit needs to run; no
   hook has to guess at another plugin's install path.
 - A single `version` in `plugin.json` and a single `CHANGELOG.md` entry
   describe the whole system's state — there's no matrix of "which plugin

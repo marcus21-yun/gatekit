@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """run_tests.py — single entry point for the full gatekit test suite.
 
-Runs the plugin's own unittest suite (plugin/tests/, via unittest discover)
+Runs the plugin's own unittest suite (.claude/gatekit-core/tests/, via unittest discover)
 followed by the CI gate self-tests (tools/test_tools.py), and prints one
 summary line so CI and humans can grep a single pass/fail signal:
 
@@ -38,14 +38,14 @@ def main(argv: list[str] | None = None) -> int:
 
     root = pathlib.Path(args.root).resolve() if args.root else repo_root()
 
-    plugin_dir = root / "plugin"
+    plugin_dir = root / ".claude" / "gatekit-core"
     plugin_tests_dir = plugin_dir / "tests"
     ok = True
 
     if plugin_tests_dir.is_dir():
-        # cwd must be plugin/ so that `from gatekit import ...` resolves
-        # (gatekit is a top-level package under plugin/, not under repo
-        # root) — see plugin/tests/test_lang.py's own subprocess check of
+        # cwd must be .claude/gatekit-core/ so that `from gatekit import ...` resolves
+        # (gatekit is a top-level package under .claude/gatekit-core/, not under repo
+        # root) — see .claude/gatekit-core/tests/test_lang.py's own subprocess check of
         # `python3 -m gatekit ...` with cwd=plugin.
         rc = run(
             [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"],
@@ -53,7 +53,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         ok = ok and rc == 0
     else:
-        print(f"plugin/tests not found under {root}, skipping plugin unittest discovery")
+        print(f".claude/gatekit-core/tests not found under {root}, skipping plugin unittest discovery")
 
     test_tools_path = root / "tools" / "test_tools.py"
     if test_tools_path.is_file():

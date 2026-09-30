@@ -90,7 +90,7 @@ def count_lines(path: pathlib.Path) -> int:
 def scan(root: pathlib.Path) -> list[dict]:
     findings: list[dict] = []
 
-    for skill_md in sorted((root / "plugin" / "skills").glob("*/SKILL.md")):
+    for skill_md in sorted((root / ".claude" / "skills").glob("*/SKILL.md")):
         rel = skill_md.relative_to(root).as_posix()
         n = count_lines(skill_md)
         if n > SKILL_MAX_LINES:
@@ -114,7 +114,7 @@ def scan(root: pathlib.Path) -> list[dict]:
                 }
             )
 
-    for cmd_md in sorted((root / "plugin" / "commands").glob("*.md")):
+    for cmd_md in sorted((root / ".claude" / "commands" / "gatekit").glob("*.md")):
         rel = cmd_md.relative_to(root).as_posix()
         n = count_lines(cmd_md)
         if n > COMMAND_MAX_LINES:

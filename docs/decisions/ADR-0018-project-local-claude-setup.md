@@ -19,7 +19,7 @@ The reusable Python kernel and its data remain together in
 
 Project hooks address gate scripts through `${CLAUDE_PROJECT_DIR}`. This is the
 official project-root placeholder for settings hooks and avoids reliance on
-the plugin-only `${CLAUDE_PLUGIN_ROOT}` environment.
+the plugin-only `${CLAUDE_PROJECT_DIR}/.claude/gatekit-core` environment.
 
 ## Consequences
 

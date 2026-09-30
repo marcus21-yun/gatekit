@@ -25,7 +25,7 @@ gatekit을 쓰다 보면 **막히는 일이 자주 생긴다.** 그게 이 도�
 | 스펙 검증 실패 — 제목 누락 | 템플릿의 H2 제목을 지우거나 바꿈 | `heading-map.json`의 해당 언어 제목을 그대로 복원. 06번 문서에 전체 목록이 있다 |
 | 스펙 검증 실패 — 다른 언어 제목 혼입 | 한 파일에 `## 목표`와 `## Goals`가 섞임 | 한 언어로 통일. 특히 `PROGRESS.md`에 프리핸드 제목을 쓸 때 자주 생긴다. 템플릿에서 복사한다 |
 | 스펙 검증 실패 — 가정 원장 번호 불일치 | 인라인 표시 번호와 원장 행 번호가 안 맞음 | 인라인에 있고 행이 없으면 `fail`이니 행을 추가. 행만 있고 인라인이 없으면 `warn` |
-| 계약이 stale | `05-gate.md`가 파생 이후 변경됨, 또는 디자인 입력(`02-screens.md`, `02-design.md`, `tokens.json`)이 바뀜 — `contract status`가 바뀐 파일명을 알려준다 | `/gatekit:tasks` 후 `/gatekit:gate` 재실행 (디자인이 바뀐 경우), 또는 `python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" contract derive` 재실행 (05만 바뀐 경우). 승인도 만료됐으면 다시 승인 |
+| 계약이 stale | `05-gate.md`가 파생 이후 변경됨, 또는 디자인 입력(`02-screens.md`, `02-design.md`, `tokens.json`)이 바뀜 — `contract status`가 바뀐 파일명을 알려준다 | `/gatekit:tasks` 후 `/gatekit:gate` 재실행 (디자인이 바뀐 경우), 또는 `python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" contract derive` 재실행 (05만 바뀐 경우). 승인도 만료됐으면 다시 승인 |
 | `approve check`가 `fail` | 승인 후 파일이 바뀜 | 사용자가 다시 읽고 다시 승인. 해시를 맞추려고 파일을 되돌리면 안 된다 |
 | `approve check`가 `unverified` | 승인 기록 자체가 없음 | `/gatekit:gate`를 처음부터 실행 |
 | 워커 없음 (`workers check`가 `fail`) | 기본 백엔드 바이너리가 PATH에 없음 | 해당 CLI 설치, 또는 `workers set-default <name>`으로 다른 백엔드 지정 |
@@ -36,7 +36,7 @@ gatekit을 쓰다 보면 **막히는 일이 자주 생긴다.** 그게 이 도�
 | 전체 예산 초과로 `unverified` | 기준 합계가 45초 기본 예산보다 큼 | 실측한 뒤 `gatekit-budget` 펜스로 `total_budget_s` 선언 (상한 600). 측정 없이 올리지 않는다 |
 | 정지 게이트가 반복 차단 | 계약에 `fail`이나 `unverified` 기준이 있음 | 메시지에 나온 기준의 원인을 고친다. 3회 차단 후에는 자동으로 물러나지만 판정은 실패로 기록된다 |
 | 한국어로 물었는데 영어로 출력됨 | 프롬프트의 한글 비율이 30% 미만이거나 원장에 `en`이 저장됨 | 한국어 문장으로 다시 프롬프트를 보낸다. `lang` 서브커맨드로 감지 결과를 직접 확인할 수 있다 |
-| CLI 실행 시 `ModuleNotFoundError: gatekit` | 모듈 실행 형식을 썼고, 프로젝트 디렉터리에서는 패키지가 `sys.path`에 없음 | 런처 형식 `python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" <sub>` 을 쓴다 |
+| CLI 실행 시 `ModuleNotFoundError: gatekit` | 모듈 실행 형식을 썼고, 프로젝트 디렉터리에서는 패키지가 `sys.path`에 없음 | 런처 형식 `python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" <sub>` 을 쓴다 |
 | spawn이 거부됨 | 프롬프트에 `gatekit-scope` 펜스가 없거나 JSON이 잘못됨 | 펜스를 추가한다. `write_scope`와 `stop_when`은 필수다 |
 | spawn 범위 충돌 | 이미 활성인 에이전트의 범위와 겹침 | 범위를 좁히거나 그 에이전트가 끝날 때까지 기다린다. 메시지에 소유자 이름이 나온다 |
 | 빌드는 통과했는데 완료가 아니라고 함 | 빌드 통과와 계약 통과는 다름 | `/gatekit:verify`가 계약을 판정한다 |
@@ -60,7 +60,7 @@ gatekit을 쓰다 보면 **막히는 일이 자주 생긴다.** 그게 이 도�
 게이트들이 무엇을 기록했는지 확인할 때 쓴다.
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" ledger show --session <session_id>
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" ledger show --session <session_id>
 ```
 
 출력에서 확인할 것들이다.
@@ -74,7 +74,7 @@ python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" ledger show --session <session_id
 ## 잡 상태 직접 보기
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" jobs results --compact
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" jobs results --compact
 ```
 
 특정 게이트의 실패 이유가 필요하면 그 태스크의 `gates.json`만 읽는다.
@@ -88,8 +88,8 @@ python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" jobs results --compact
 ## 잡 디렉터리 정리
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" jobs clean        # 최근 잡만 남김
-python3 "${CLAUDE_PLUGIN_ROOT}/bin/gatekit.py" jobs clean --all  # 전부 삭제
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" jobs clean        # 최근 잡만 남김
+python3 "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/bin/gatekit.py" jobs clean --all  # 전부 삭제
 ```
 
 ## 진단이 막힐 때 순서

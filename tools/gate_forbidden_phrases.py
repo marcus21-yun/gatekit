@@ -2,7 +2,7 @@
 """gate_forbidden_phrases.py — keep execution steps out of skills, and keep
 commands anchored to the policy/config vocabulary they must respect.
 
-Why FORBIDDEN applies to plugin/skills/**: ARCHITECTURE.md §0 draws a hard
+Why FORBIDDEN applies to .claude/gatekit-core/skills/**: ARCHITECTURE.md §0 draws a hard
 line — SKILL.md is a "≤ 40-line trigger shim", commands/*.md hold "the
 execution instruction". If a skill starts embedding imperative step-by-step
 instructions ("Step 1:", "EXECUTE IMMEDIATELY", "WHEN TRIGGERED"), the skill
@@ -10,10 +10,10 @@ has silently become a second, competing execution path that drifts from the
 command file it's supposed to just point at. Grepping these phrases out of
 skills is how that boundary stays enforced instead of just documented.
 
-Why REQUIRED applies to plugin/commands/*.md: gates live in hooks, not
+Why REQUIRED applies to .claude/gatekit-core/commands/*.md: gates live in hooks, not
 prose (CLAUDE.md), but commands still need to *tell the model* that gates
 exist and that output language is not fixed. Every command must reference
-policy/ (the runtime-loaded policy documents in plugin/policy/) at least
+policy/ (the runtime-loaded policy documents in .claude/gatekit-core/policy/) at least
 once, and must mention output_lang (the ledger field that controls which
 language user-facing text is emitted in, per ARCHITECTURE.md §8). A command
 missing either is not wired into the rest of the contract even if it reads
@@ -53,7 +53,7 @@ def repo_root() -> pathlib.Path:
 def scan(root: pathlib.Path) -> list[dict]:
     findings: list[dict] = []
 
-    for skill_md in sorted((root / "plugin" / "skills").glob("*/SKILL.md")):
+    for skill_md in sorted((root / ".claude" / "skills").glob("*/SKILL.md")):
         rel = skill_md.relative_to(root).as_posix()
         text = skill_md.read_text(encoding="utf-8")
         lines = text.splitlines()
@@ -68,7 +68,7 @@ def scan(root: pathlib.Path) -> list[dict]:
                         }
                     )
 
-    for cmd_md in sorted((root / "plugin" / "commands").glob("*.md")):
+    for cmd_md in sorted((root / ".claude" / "commands" / "gatekit").glob("*.md")):
         rel = cmd_md.relative_to(root).as_posix()
         text = cmd_md.read_text(encoding="utf-8")
         for label, pattern in REQUIRED_IN_COMMANDS:

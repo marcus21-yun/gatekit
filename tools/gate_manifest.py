@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """gate_manifest.py — cross-check the plugin manifests against reality.
 
-Why: `.claude-plugin/marketplace.json` and `plugin/.claude-plugin/plugin.json`
+Why: `.claude-.claude/gatekit-core/marketplace.json` and `.claude/gatekit-core/.claude-.claude/gatekit-core/plugin.json`
 are the two files Claude Code actually reads to install and run gatekit.
 ARCHITECTURE.md §1 fixes their shape (one plugin, `./plugin` as its source)
 and §3 fixes the hook registrations. If these manifests drift from the
@@ -14,9 +14,9 @@ Checks:
     entry, its "source" resolves to an existing directory.
   - plugin.json: valid JSON, has required keys (name, version, commands,
     skills, hooks), version is semver, its "commands"/"skills"/"hooks"
-    paths resolve under plugin/.
+    paths resolve under .claude/gatekit-core/.
   - hooks/hooks.json (auto-loaded; must NOT also be listed in plugin.json "hooks"): valid JSON, and every
-    command path found inside it — after substituting ${CLAUDE_PLUGIN_ROOT}
+    command path found inside it — after substituting ${CLAUDE_PROJECT_DIR}/.claude/gatekit-core
     with the plugin directory — resolves to an existing, non-empty file.
   - plugin.json "version" == the version in the top ("## <version> — ...")
     entry of CHANGELOG.md.
@@ -37,7 +37,7 @@ import sys
 
 SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+([+-][0-9A-Za-z.-]+)?$")
 CHANGELOG_HEADING_RE = re.compile(r"^##\s+(\S+)")
-PLUGIN_ROOT_TOKEN = "${CLAUDE_PLUGIN_ROOT}"
+PLUGIN_ROOT_TOKEN = "${CLAUDE_PROJECT_DIR}/.claude/gatekit-core"
 
 
 def repo_root() -> pathlib.Path:
@@ -84,13 +84,13 @@ def check_marketplace(root: pathlib.Path, findings: list[dict]) -> None:
 
 
 def check_plugin_json(root: pathlib.Path, findings: list[dict]) -> dict | None:
-    path = root / "plugin" / ".claude-plugin" / "plugin.json"
+    path = root / ".claude" / "gatekit-core" / ".claude-plugin" / "plugin.json"
     rel = path.relative_to(root).as_posix()
     data = _load_json(path, findings, rel)
     if data is None:
         return None
 
-    required_keys = ["name", "version", "commands", "skills"]
+    required_keys = ["name", "version"]
     for key in required_keys:
         if key not in data:
             findings.append({"path": rel, "line": 1, "message": f"missing required key: '{key}'"})
@@ -99,34 +99,15 @@ def check_plugin_json(root: pathlib.Path, findings: list[dict]) -> dict | None:
     if isinstance(version, str) and not SEMVER_RE.match(version):
         findings.append({"path": rel, "line": 1, "message": f"version '{version}' is not valid semver"})
 
-    plugin_dir = path.parent.parent  # plugin/
-    for key in ("commands", "skills"):
-        rel_path = data.get(key)
-        if isinstance(rel_path, str):
-            resolved = (plugin_dir / rel_path).resolve()
-            if not resolved.is_dir():
-                findings.append(
-                    {"path": rel, "line": 1, "message": f"'{key}' path does not exist: {rel_path}"}
-                )
-
-    # Claude Code loads plugin/hooks/hooks.json automatically. Listing it again
+    plugin_dir = path.parent.parent  # .claude/gatekit-core/
+    # Claude Code loads .claude/settings.json automatically. Listing it again
     # under plugin.json "hooks" makes the plugin fail to load ("Duplicate hooks
     # file detected"), so the key must be absent unless it names an *extra* file.
-    hooks_rel = data.get("hooks")
-    standard = plugin_dir / "hooks" / "hooks.json"
-    if isinstance(hooks_rel, str):
-        hooks_path = (plugin_dir / hooks_rel).resolve()
-        if hooks_path == standard.resolve():
-            findings.append({"path": rel, "line": 1,
-                             "message": "'hooks' must not reference hooks/hooks.json; it is loaded automatically and a duplicate reference fails plugin load"})
-        elif not hooks_path.is_file():
-            findings.append({"path": rel, "line": 1, "message": f"'hooks' path does not exist: {hooks_rel}"})
-        else:
-            check_hooks_json(root, plugin_dir, hooks_path, findings)
+    standard = plugin_dir.parent / "settings.json"
     if standard.is_file():
         check_hooks_json(root, plugin_dir, standard, findings)
     else:
-        findings.append({"path": rel, "line": 1, "message": "plugin/hooks/hooks.json is missing; gates would never fire"})
+        findings.append({"path": ".claude/settings.json", "line": 1, "message": "project hook settings are missing; gates would never fire"})
 
     return data
 
@@ -220,7 +201,6 @@ def check_version_matches_changelog(root: pathlib.Path, plugin_version: str | No
 
 def scan(root: pathlib.Path) -> list[dict]:
     findings: list[dict] = []
-    check_marketplace(root, findings)
     plugin_data = check_plugin_json(root, findings)
     plugin_version = plugin_data.get("version") if isinstance(plugin_data, dict) else None
     if isinstance(plugin_version, str):

@@ -69,7 +69,7 @@ Codex에는 플러그인 형식이 없으므로, 이 저장소를 클론한 뒤 
 
 ```
 git clone https://github.com/LovelyPaul/gatekit
-python3 "gatekit/plugin/bin/gatekit.py" install --host codex
+python3 "gatekit/.claude/gatekit-core/bin/gatekit.py" install --host codex
 ```
 
 `.codex/hooks.json`, 커맨드별 스킬 `.agents/skills/gatekit-*`, `AGENTS.md`의
