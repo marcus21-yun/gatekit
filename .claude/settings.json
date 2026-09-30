@@ -1,0 +1,22 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      { "hooks": [ { "type": "command", "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/prompt.py\" || python \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/prompt.py\" || py \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/prompt.py\" || echo \"gatekit hook skipped: no Python interpreter found\" >&2", "timeout": 10 } ] }
+    ],
+    "PreToolUse": [
+      { "matcher": "Write|Edit|MultiEdit|NotebookEdit", "hooks": [ { "type": "command", "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/write.py\" || python \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/write.py\" || py \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/write.py\" || echo \"gatekit hook skipped: no Python interpreter found\" >&2", "timeout": 10 } ] },
+      { "matcher": "Bash", "hooks": [ { "type": "command", "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/bash.py\" || python \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/bash.py\" || py \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/bash.py\" || echo \"gatekit hook skipped: no Python interpreter found\" >&2", "timeout": 10 } ] },
+      { "matcher": "Agent|Task", "hooks": [ { "type": "command", "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/spawn.py\" || python \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/spawn.py\" || py \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/spawn.py\" || echo \"gatekit hook skipped: no Python interpreter found\" >&2", "timeout": 10 } ] }
+    ],
+    "PostToolUse": [
+      { "matcher": "AskUserQuestion", "hooks": [ { "type": "command", "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/question.py\" || python \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/question.py\" || py \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/question.py\" || echo \"gatekit hook skipped: no Python interpreter found\" >&2", "timeout": 10 } ] },
+      { "matcher": "Write|Edit|MultiEdit|NotebookEdit", "hooks": [ { "type": "command", "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/question.py\" || python \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/question.py\" || py \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/question.py\" || echo \"gatekit hook skipped: no Python interpreter found\" >&2", "timeout": 10 } ] }
+    ],
+    "PreCompact": [
+      { "hooks": [ { "type": "command", "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/compact.py\" || python \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/compact.py\" || py \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/compact.py\" || echo \"gatekit hook skipped: no Python interpreter found\" >&2", "timeout": 10 } ] }
+    ],
+    "Stop": [
+      { "hooks": [ { "type": "command", "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/stop.py\" || python \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/stop.py\" || py \"${CLAUDE_PROJECT_DIR}/.claude/gatekit-core/gatekit/gates/stop.py\" || echo \"gatekit hook skipped: no Python interpreter found\" >&2", "timeout": 600 } ] }
+    ]
+  }
+}
